@@ -54,13 +54,16 @@ const ServiceItem: FunctionComponent<ServiceItemProps> = ({ item }) => {
 
     const domain = getDomain(item.url);
 
+    // Format display name (replace hyphens with spaces, remove quotes)
+    const displayName = item.name.replace(/"/g, '').replace(/-/g, ' ');
+
     return (
         <div className='rounded-lg border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950 p-5 transition-colors hover:border-gray-300 dark:hover:border-gray-700'>
             <div className='flex items-start justify-between mb-4'>
                 <div className="flex items-center gap-3 flex-1">
                     <Icon />
                     <div className="flex flex-col gap-1.5">
-                        <h4 className="text-base font-medium text-gray-900 dark:text-white">{item.name}</h4>
+                        <h4 className="text-base font-medium text-gray-900 dark:text-white">{displayName}</h4>
                         {domain && (
                             <a 
                                 href={item.url} 
