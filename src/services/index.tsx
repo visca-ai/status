@@ -34,28 +34,82 @@ const ServicesSection: NextPage = () => {
     }
 
     return (
-        <div className='space-y-12'>
-            {/* System Status Banner */}
-            <div className="relative overflow-hidden rounded-2xl border border-gray-200 dark:border-gray-800 bg-gradient-to-br from-white to-gray-50 dark:from-gray-900 dark:to-black p-8">
-                <div className="relative z-10">
-                    <div className='flex items-center gap-4 mb-2'>
-                        <Icon />
-                        <h2 className="text-2xl font-semibold tracking-tight text-gray-900 dark:text-white">{systemStatus?.title}</h2>
+        <div className='space-y-8'>
+            {/* System Status Banner with Status Indicator */}
+            <div className="relative overflow-hidden rounded-2xl border bg-white dark:bg-gray-900 shadow-sm">
+                {systemStatus?.status === Status.OPERATIONAL && (
+                    <div className="absolute inset-0 bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-950/20 dark:to-teal-950/20" />
+                )}
+                {systemStatus?.status === Status.PARTIAL_OUTAGE && (
+                    <div className="absolute inset-0 bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-950/20 dark:to-orange-950/20" />
+                )}
+                {systemStatus?.status === Status.OUTAGE && (
+                    <div className="absolute inset-0 bg-gradient-to-br from-red-50 to-rose-50 dark:from-red-950/20 dark:to-rose-950/20" />
+                )}
+                <div className="relative p-8 border-l-4 border-gray-200 dark:border-gray-700" style={{
+                    borderLeftColor: systemStatus?.status === Status.OPERATIONAL ? '#10b981' : 
+                                   systemStatus?.status === Status.PARTIAL_OUTAGE ? '#f59e0b' : 
+                                   systemStatus?.status === Status.OUTAGE ? '#ef4444' : '#9ca3af'
+                }}>
+                    <div className='flex items-start justify-between flex-wrap gap-4'>
+                        <div className='flex items-start gap-4'>
+                            <Icon />
+                            <div>
+                                <h2 className="text-2xl font-semibold tracking-tight text-gray-900 dark:text-white mb-1">{systemStatus?.title}</h2>
+                                <p className="text-sm text-gray-600 dark:text-gray-400">Last checked {systemStatus?.datetime || 'just now'}</p>
+                            </div>
+                        </div>
+                        <div className="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium" style={{
+                            backgroundColor: systemStatus?.status === Status.OPERATIONAL ? '#d1fae5' : 
+                                           systemStatus?.status === Status.PARTIAL_OUTAGE ? '#fef3c7' : 
+                                           systemStatus?.status === Status.OUTAGE ? '#fee2e2' : '#f3f4f6',
+                            color: systemStatus?.status === Status.OPERATIONAL ? '#065f46' : 
+                                  systemStatus?.status === Status.PARTIAL_OUTAGE ? '#92400e' : 
+                                  systemStatus?.status === Status.OUTAGE ? '#991b1b' : '#374151'
+                        }}>
+                            {systemStatus?.status === Status.OPERATIONAL && '✓ All Systems Operational'}
+                            {systemStatus?.status === Status.PARTIAL_OUTAGE && '⚠ Degraded Performance'}
+                            {systemStatus?.status === Status.OUTAGE && '✕ Service Disruption'}
+                        </div>
                     </div>
-                    <p className="text-gray-600 dark:text-gray-400 text-sm">Last checked {systemStatus?.datetime || 'just now'}</p>
                 </div>
+            </div>
+
+            {/* Legend */}
+            <div className="flex flex-wrap items-center gap-6 px-4 py-4 bg-gray-50 dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800">
+                <span className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Status Legend:</span>
+                <div className="flex items-center gap-2">
+                    <div className="h-3 w-3 rounded-full bg-emerald-500 ring-4 ring-emerald-500/20"></div>
+                    <span className="text-sm text-gray-700 dark:text-gray-300">Operational</span>
+                </div>
+                <div className="flex items-center gap-2">
+                    <div className="h-3 w-3 rounded-full bg-amber-500 ring-4 ring-amber-500/20"></div>
+                    <span className="text-sm text-gray-700 dark:text-gray-300">Degraded</span>
+                </div>
+                <div className="flex items-center gap-2">
+                    <div className="h-3 w-3 rounded-full bg-red-500 ring-4 ring-red-500/20"></div>
+                    <span className="text-sm text-gray-700 dark:text-gray-300">Outage</span>
+                </div>
+                <div className="flex items-center gap-2">
+                    <div className="h-3 w-3 rounded-full bg-gray-300 dark:bg-gray-600"></div>
+                    <span className="text-sm text-gray-700 dark:text-gray-300">Unknown</span>
+                </div>
+                <a href="https://github.com/visca-ai/status/issues" target="_blank" rel="noopener noreferrer" className="ml-auto text-xs text-emerald-600 dark:text-emerald-400 hover:underline">View incident history →</a>
             </div>
 
             {/* Services Grid */}
             <div>
-                <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-6">Services</h3>
+                <div className="flex items-center justify-between mb-6">
+                    <h3 className="text-sm font-semibold text-gray-900 dark:text-white uppercase tracking-wider">Services</h3>
+                    <span className="text-xs text-gray-500 dark:text-gray-400">{(data as Service[]).length} services monitored</span>
+                </div>
                 {
                     isServicesLoading ? (
                         <div className="flex justify-center items-center py-20">
-                            <div className="animate-spin rounded-full h-8 w-8 border-2 border-gray-200 dark:border-gray-800 border-t-gray-900 dark:border-t-white"></div>
+                            <div className="animate-spin rounded-full h-10 w-10 border-2 border-gray-200 dark:border-gray-800 border-t-emerald-500"></div>
                         </div>
                     ) : (
-                        <div className="space-y-2">
+                        <div className="space-y-3">
                             {
                                 (data as Service[]).map(service => (
                                     <ServiceItem key={service.id} item={service} />
@@ -68,7 +122,7 @@ const ServicesSection: NextPage = () => {
 
             {/* Recent Incidents */}
             <div>
-                <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-6">Incident History</h3>
+                <h3 className="text-sm font-semibold text-gray-900 dark:text-white uppercase tracking-wider mb-6">Incident History</h3>
                 <IncidentsSection />
             </div>
         </div >

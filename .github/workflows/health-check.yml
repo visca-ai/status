@@ -6,13 +6,19 @@ on:
     - cron: "*/7 * * * *"
   push:
     branches: ["staging/main"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
 
 jobs:
   health_check_job:
     runs-on: ubuntu-latest
     name: Check all sites
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
       - name: Run Shell Script
         id: shell_script_run
         run: bash ./scripts/health-check.sh
