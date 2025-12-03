@@ -19,6 +19,62 @@ jobs:
       - uses: actions/checkout@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-      - name: Run Shell Script
-        id: shell_script_run
-        run: bash ./scripts/health-check.sh
+      
+      - name: Run Health Check
+        id: health_check
+        run: |
+          bash ./scripts/health-check.sh
+          # Check for failures in the logs
+          FAILURES=$(grep -h "failed" public/status/*_report.log | tail -n 5 || true)
+          if [ ! -z "$FAILURES" ]; then
+            echo "has_failures=true" >> $GITHUB_OUTPUT
+            echo "failures<<EOF" >> $GITHUB_OUTPUT
+            echo "$FAILURES" >> $GITHUB_OUTPUT
+            echo "EOF" >> $GITHUB_OUTPUT
+          else
+            echo "has_failures=false" >> $GITHUB_OUTPUT
+          fi
+      
+      - name: Send Slack Notification on Failure
+        if: steps.health_check.outputs.has_failures == 'true' && secrets.SLACK_WEBHOOK_URL != ''
+        uses: slackapi/slack-github-action@v1.25.0
+        with:
+          payload: |
+            {
+              "text": "🚨 Service Health Alert",
+              "blocks": [
+                {
+                  "type": "header",
+                  "text": {
+                    "type": "plain_text",
+                    "text": "⚠️ Service Health Issue Detected"
+                  }
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*Status Page:* <https://status.visca.ai|status.visca.ai>\n*Repository:* <${{ github.server_url }}/${{ github.repository }}|${{ github.repository }}>"
+                  }
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*Recent Failures:*\n```${{ steps.health_check.outputs.failures }}```"
+                  }
+                },
+                {
+                  "type": "context",
+                  "elements": [
+                    {
+                      "type": "mrkdwn",
+                      "text": "Detected at: <!date^${{ github.event.repository.updated_at }}^{date_short_pretty} {time}|now>"
+                    }
+                  ]
+                }
+              ]
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
