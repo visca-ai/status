@@ -12,8 +12,9 @@ declare -a URLSARRAY
 
 urlsConfig="public/urls.cfg"
 echo "Reading $urlsConfig"
-while IFS='=' read -r key url
-do
+
+# Read file and process last line even if no trailing newline
+while IFS='=' read -r key url || [[ -n "$key" ]]; do
   # Skip empty lines
   [[ -z "$key" ]] && continue
   # Skip lines starting with [ (group headers) - use simple pattern match
