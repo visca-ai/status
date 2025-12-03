@@ -4,6 +4,8 @@ name: Scheduled Health Check
 on:
   schedule:
     - cron: "*/7 * * * *"
+  push:
+    branches: ["staging/main"]
 
 jobs:
   health_check_job:
