@@ -16,10 +16,10 @@ while IFS='=' read -r key url
 do
   # Skip empty lines
   [[ -z "$key" ]] && continue
-  # Skip lines starting with [ (group headers)
-  [[ "$key" =~ ^\[.* ]] && continue
+  # Skip lines starting with [ (group headers) - use simple pattern match
+  [[ "$key" == "["* ]] && continue
   # Skip comment lines
-  [[ "$key" =~ ^#.* ]] && continue
+  [[ "$key" == "#"* ]] && continue
   
   echo "  $key=$url"
   KEYSARRAY+=("$key")
