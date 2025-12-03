@@ -5,16 +5,28 @@ import ServicesSection from "../src/services"
 
 const Home: NextPage = () => {
   return (
-    <div className='h-full w-full '>
-      <div className="mt-20 absolute inset-0 bg-[url(/grid.svg)] bg-center [mask-image:linear-gradient(180deg,white,rgba(255,255,255,0))]"></div>
-      <div className="w-full h-40 absolute bg-light-purple dark:purple dark:bg-black">
-        <div className="sm:ml-0 ml-5 mr-0 mt-3 md:pl-80 md:pr-80 sm:w-full h-full bg-purple-500 dark:bg-black">
-          <Image src="/wirtual-icon.png" width={150} height={100} className="w-40 h-16" alt="Visca AI Status" />
+    <div className='min-h-screen bg-white dark:bg-black'>
+      {/* Minimal Header */}
+      <header className="border-b border-gray-200 dark:border-gray-800 bg-white/80 dark:bg-black/80 backdrop-blur-xl sticky top-0 z-50">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <div className="flex items-center gap-3">
+            <Image src="/wirtual-icon.png" width={32} height={32} className="w-8 h-8 rounded-md" alt="Visca AI" />
+            <h1 className="text-lg font-semibold text-gray-900 dark:text-white">Visca AI Systems Status</h1>
+          </div>
         </div>
-      </div>
-      <div className='mt-20 w-full absolute overflow-scroll	'>
+      </header>
+
+      {/* Clean Content */}
+      <main className='w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12'>
         <ServicesSection />
-      </div >
+      </main>
+
+      {/* Footer */}
+      <footer className="border-t border-gray-200 dark:border-gray-800 mt-20">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <p className="text-center text-sm text-gray-500 dark:text-gray-400">Powered by GitHub Actions • Updated every 7 minutes</p>
+        </div>
+      </footer>
     </div>
   )
 }

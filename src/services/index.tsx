@@ -34,36 +34,41 @@ const ServicesSection: NextPage = () => {
     }
 
     return (
-        <div className='mt-10'>
-            <div className="mx-px md:ml-80 md:mr-80 bg-white dark:bg-slate-800 rounded-xl card">
-                <div className="w-full flex justify-between pt-2 pl-6 pr-6 pb-2">
-                    <div className='flex items-center sm:text-xl text-xs font-semibold leading-7'>
+        <div className='space-y-12'>
+            {/* System Status Banner */}
+            <div className="relative overflow-hidden rounded-2xl border border-gray-200 dark:border-gray-800 bg-gradient-to-br from-white to-gray-50 dark:from-gray-900 dark:to-black p-8">
+                <div className="relative z-10">
+                    <div className='flex items-center gap-4 mb-2'>
                         <Icon />
-                        <p className="ml-3 text-gray-900">{systemStatus?.title}</p>                        
+                        <h2 className="text-2xl font-semibold tracking-tight text-gray-900 dark:text-white">{systemStatus?.title}</h2>
                     </div>
-                    <div>
-                        <p className="text-xs text-gray-400">Last updated</p>
-                        <p className="text-xs text-gray-400 text-end ">{systemStatus?.datetime}</p>
-                    </div>
+                    <p className="text-gray-600 dark:text-gray-400 text-sm">Last checked {systemStatus?.datetime || 'just now'}</p>
                 </div>
             </div>
-            <div className="mx-px mt-10 md:ml-60 md:mr-60">
-                <div className="card-body">
-                    {
-                        isServicesLoading ? (
-                            <p>Loading...</p>
-                        ) : (
-                            <ul>
-                                {
-                                    (data as Service[]).map(service => (
-                                        <ServiceItem key={service.id} item={service} />
-                                    ))
-                                }
-                            </ul>
-                        )
-                    }
-                </div>
-                <p className="mt-10 sm:text-lg	text-base font-semibold leading-7 text-gray-900">Recent incident</p>
+
+            {/* Services Grid */}
+            <div>
+                <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-6">Services</h3>
+                {
+                    isServicesLoading ? (
+                        <div className="flex justify-center items-center py-20">
+                            <div className="animate-spin rounded-full h-8 w-8 border-2 border-gray-200 dark:border-gray-800 border-t-gray-900 dark:border-t-white"></div>
+                        </div>
+                    ) : (
+                        <div className="space-y-2">
+                            {
+                                (data as Service[]).map(service => (
+                                    <ServiceItem key={service.id} item={service} />
+                                ))
+                            }
+                        </div>
+                    )
+                }
+            </div>
+
+            {/* Recent Incidents */}
+            <div>
+                <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-6">Incident History</h3>
                 <IncidentsSection />
             </div>
         </div >

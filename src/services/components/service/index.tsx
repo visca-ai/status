@@ -12,23 +12,13 @@ interface ServiceItemProps {
 const ServiceItem: FunctionComponent<ServiceItemProps> = ({ item }) => {
     const Icon = () => {
         if (item?.status === Status.OPERATIONAL) {
-            return <svg className="h-6 w-6 flex-none fill-sky-100 stroke-green-500 stroke-2">
-                            <circle cx="12" cy="12" r="11" />
-                            <path d="m8 13 2.165 2.165a1 1 0 0 0 1.521-.126L16 9" fill="none" />
-                        </svg>
+            return <div className="h-2 w-2 rounded-full bg-emerald-500 ring-4 ring-emerald-500/20"></div>
         } else if(item?.status === Status.PARTIAL_OUTAGE) {
-            return <svg  className="h-8 w-8 flex-none" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="orange">
-                        <path d="M256 48C141.31 48 48 141.31 48 256s93.31 208 208 208 208-93.31 208-208S370.69 48 256 48zm0 319.91a20 20 0 1 1 20-20 20 20 0 0 1-20 20zm21.72-201.15-5.74 122a16 16 0 0 1-32 0l-5.74-121.94v-.05a21.74 21.74 0 1 1 43.44 0z"></path>
-                    </svg>
+            return <div className="h-2 w-2 rounded-full bg-amber-500 ring-4 ring-amber-500/20"></div>
         } else if(item?.status === Status.OUTAGE) {
-            return <svg className="h-8 w-8 flex-none" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="red">
-                        <path d="M256 48C141.31 48 48 141.31 48 256s93.31 208 208 208 208-93.31 208-208S370.69 48 256 48zm0 319.91a20 20 0 1 1 20-20 20 20 0 0 1-20 20zm21.72-201.15-5.74 122a16 16 0 0 1-32 0l-5.74-121.94v-.05a21.74 21.74 0 1 1 43.44 0z"></path>
-                    </svg>
+            return <div className="h-2 w-2 rounded-full bg-red-500 ring-4 ring-red-500/20"></div>
         } else {
-            return <svg className="h-6 w-6 flex-none fill-sky-100 stroke-green-500 stroke-2">
-                            <circle cx="12" cy="12" r="11" />
-                            <path d="m8 13 2.165 2.165a1 1 0 0 0 1.521-.126L16 9" fill="none" />
-                        </svg>
+            return <div className="h-2 w-2 rounded-full bg-gray-300 ring-4 ring-gray-300/20"></div>
         }
     }
 
@@ -38,23 +28,21 @@ const ServiceItem: FunctionComponent<ServiceItemProps> = ({ item }) => {
     }
 
     return (
-        <div className='mb-10'>
-            <div className='flex'>
-                <Icon />
-                <div className="w-full flex justify-between items-baseline">
-                    <p className="ml-4 text-base font-semibold leading-6 text-gray-900">{item.name}</p>
-                    <p className='text-xs text-gray-400 items-baseline	self-baseline'> {calculateUpTime()}% operational in last 90 days</p>
+        <div className='group rounded-xl border border-gray-200 dark:border-gray-800 hover:border-gray-300 dark:hover:border-gray-700 bg-white dark:bg-black p-6 transition-all'>
+            <div className='flex items-center justify-between mb-4'>
+                <div className="flex items-center gap-3">
+                    <Icon />
+                    <h4 className="font-medium text-gray-900 dark:text-white">{item.name}</h4>
                 </div>
-
+                <span className='text-xs font-medium text-gray-500 dark:text-gray-400'>{calculateUpTime()}% uptime</span>
             </div>
-            <div className='flex mt-2'>
+            <div className='flex gap-0.5'>
                 {
                     ((item.logs || []) as LogDaySummary[]).map((log) => (
                         <ServiceLog key={log.date} item={log} />
                     ))
                 }
             </div>
-
         </div>
     )
 }
