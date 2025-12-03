@@ -35,6 +35,10 @@ for (( index=0; index < ${#KEYSARRAY[@]}; index++ ))
 do
   key="${KEYSARRAY[index]}"
   url="${URLSARRAY[index]}"
+  
+  # Strip quotes from key for filename
+  filename_key="${key//\"/}"
+  
   echo "  $key=$url"
 
   for i in {1..3}
@@ -57,9 +61,9 @@ do
   if [[ $commit == true ]]
   then
     mkdir -p public/status
-    echo "$dateTime, $result, $time_total" >> "public/status/${key}_report.log"
-    tail -2000 "public/status/${key}_report.log" > "public/status/${key}_report.log.tmp"
-    mv "public/status/${key}_report.log.tmp" "public/status/${key}_report.log"
+    echo "$dateTime, $result, $time_total" >> "public/status/${filename_key}_report.log"
+    tail -2000 "public/status/${filename_key}_report.log" > "public/status/${filename_key}_report.log.tmp"
+    mv "public/status/${filename_key}_report.log.tmp" "public/status/${filename_key}_report.log"
   else
     echo "    $dateTime, $result, $time_total"
   fi

@@ -115,7 +115,9 @@ function useServices(dateOffset: number = 0) {
 }
 
 async function logs(key: string, dateOffset: number = 0): Promise<LogDaySummary[]> {
-    const response = await fetch(`https://raw.githubusercontent.com/visca-ai/status/main/public/status/${key}_report.log`);
+    // Strip quotes from key for filename
+    const filename = key.replace(/"/g, '');
+    const response = await fetch(`https://raw.githubusercontent.com/visca-ai/status/main/public/status/${filename}_report.log`);
 
     const text = await response.text();
     const lines = text.split("\n");
