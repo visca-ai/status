@@ -14,6 +14,13 @@ urlsConfig="public/urls.cfg"
 echo "Reading $urlsConfig"
 while IFS='=' read -r key url
 do
+  # Skip empty lines
+  [[ -z "$key" ]] && continue
+  # Skip lines starting with [ (group headers)
+  [[ "$key" =~ ^\[.* ]] && continue
+  # Skip comment lines
+  [[ "$key" =~ ^#.* ]] && continue
+  
   echo "  $key=$url"
   KEYSARRAY+=("$key")
   URLSARRAY+=("$url")
