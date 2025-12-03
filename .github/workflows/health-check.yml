@@ -36,7 +36,8 @@ jobs:
           fi
       
       - name: Send Slack Notification on Failure
-        if: steps.health_check.outputs.has_failures == 'true' && secrets.SLACK_WEBHOOK_URL != ''
+        if: steps.health_check.outputs.has_failures == 'true'
+        continue-on-error: true
         uses: slackapi/slack-github-action@v1.25.0
         with:
           payload: |

@@ -75,7 +75,7 @@ function useServices(dateOffset: number = 0) {
                         };
                     }
                     
-                    const log = await logs(key, dateOffset);
+                    const log = await logs(key, url, dateOffset);
 
                     if (log.length > 0) {
                         currentGroup.services.push({ 
@@ -114,9 +114,10 @@ function useServices(dateOffset: number = 0) {
     return [data, isLoading, error];
 }
 
-async function logs(key: string, dateOffset: number = 0): Promise<LogDaySummary[]> {
-    // Strip quotes from key for filename
-    const filename = key.replace(/"/g, '');
+async function logs(key: string, url: string, dateOffset: number = 0): Promise<LogDaySummary[]> {
+    // Extract domain from URL and create safe filename
+    const domain = url.replace(/^https?:\/\/([^\/]+).*/, '$1');
+    const filename = domain.replace(/\./g, '_');
     const response = await fetch(`https://raw.githubusercontent.com/visca-ai/status/main/public/status/${filename}_report.log`);
 
     const text = await response.text();

@@ -37,10 +37,12 @@ do
   key="${KEYSARRAY[index]}"
   url="${URLSARRAY[index]}"
   
-  # Strip quotes from key for filename
-  filename_key="${key//\"/}"
+  # Extract domain from URL as unique identifier
+  domain=$(echo "$url" | sed -E 's|^https?://([^/]+).*|\1|')
+  # Replace dots and special chars with underscores for safe filenames
+  filename_key="${domain//\./_}"
   
-  echo "  $key=$url"
+  echo "  $key=$url (domain: $domain)"
 
   for i in {1..3}
   do

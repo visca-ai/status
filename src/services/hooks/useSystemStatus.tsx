@@ -31,7 +31,7 @@ function useSystemStatus() {
                     if (!key || !url) {
                         continue;
                     }
-                    const status = await logs(key);
+                    const status = await logs(key, url);
 
                     services.push(status);
                 }
@@ -73,9 +73,10 @@ function useSystemStatus() {
     return {systemStatus, isLoading, error};
 }
 
-async function logs(key: string): Promise<ServiceStatus> {
-    // Strip quotes from key for filename
-    const filename = key.replace(/"/g, '');
+async function logs(key: string, url: string): Promise<ServiceStatus> {
+    // Extract domain from URL and create safe filename
+    const domain = url.replace(/^https?:\/\/([^\/]+).*/, '$1');
+    const filename = domain.replace(/\./g, '_');
     const response = await fetch(`https://raw.githubusercontent.com/visca-ai/status/main/public/status/${filename}_report.log`);
     const text = await response.text();
     const lines = text.split("\n");
