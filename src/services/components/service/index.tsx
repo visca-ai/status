@@ -25,7 +25,7 @@ const ServiceItem: FunctionComponent<ServiceItemProps> = ({ item }) => {
     const calculateUpTime = () => {
         if (!item.logs || item.logs.length === 0) return null;
         let successCount = item.logs.filter((item)=> item.status === Status.OPERATIONAL).length
-        return Math.round((successCount * 100) / 90);
+        return Math.round((successCount * 100) / item.logs.length);
     }
 
     const getUptimeColor = (uptime: number) => {
