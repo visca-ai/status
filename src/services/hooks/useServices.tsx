@@ -11,7 +11,7 @@ export interface ServiceGroup {
     services: Service[];
 }
 
-function useServices() {
+function useServices(dateOffset: number = 0) {
     const [data, setData] = useState<ServiceGroup[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState();
@@ -34,31 +34,30 @@ function useServices() {
                     // Skip empty lines
                     if (!configLine) continue;
                     
-                    // Check for group header [Group Name|collapsed=...]
-                    if (configLine.startsWith("[") && configLine.endsWith("]")) {
-                        // Save previous group if exists
-                        if (currentGroup) {
-                            groups.push(currentGroup);
-                        }
-                        
-                        // Parse group metadata
-                        const groupContent = configLine.slice(1, -1);
-                        const parts = groupContent.split("|");
-                        const groupName = parts[0];
-                        const collapsed = parts.find(p => p.startsWith("collapsed="))?.split("=")[1] === "true";
-                        const description = parts.find(p => p.startsWith("description="))?.split("=")[1];
-                        
-                        currentGroup = {
-                            name: groupName,
-                            collapsed: collapsed || false,
-                            description: description,
-                            services: []
-                        };
-                        continue;
-                    }
-                    
-                    // Skip lines that look like group headers but malformed
+                    // Skip any line that starts with [ (group headers)
                     if (configLine.startsWith("[")) {
+                        // Check for valid group header [Group Name|collapsed=...]
+                        if (configLine.endsWith("]")) {
+                            // Save previous group if exists
+                            if (currentGroup) {
+                                groups.push(currentGroup);
+                            }
+                            
+                            // Parse group metadata
+                            const groupContent = configLine.slice(1, -1);
+                            const parts = groupContent.split("|");
+                            const groupName = parts[0];
+                            const collapsed = parts.find(p => p.startsWith("collapsed="))?.split("=")[1] === "true";
+                            const description = parts.find(p => p.startsWith("description="))?.split("=")[1];
+                            
+                            currentGroup = {
+                                name: groupName,
+                                collapsed: collapsed || false,
+                                description: description,
+                                services: []
+                            };
+                        }
+                        // Skip this line regardless (valid or malformed group header)
                         continue;
                     }
                     
@@ -76,21 +75,23 @@ function useServices() {
                         };
                     }
                     
-                    const log = await logs(key);
+                    const log = await logs(key, dateOffset);
 
                     if (log.length > 0) {
                         currentGroup.services.push({ 
                             id: serviceId++, 
                             name: key, 
                             status: log[log.length - 1].status, 
-                            logs: log
+                            logs: log,
+                            url: url
                         })
                     } else {
                         currentGroup.services.push({ 
                             id: serviceId++, 
                             name: key, 
                             status: "unknown", 
-                            logs: log
+                            logs: log,
+                            url: url
                         })
                     }
                 }
@@ -108,12 +109,12 @@ function useServices() {
             }
         };
         loadData();
-    }, []);
+    }, [dateOffset]);
 
     return [data, isLoading, error];
 }
 
-async function logs(key: string): Promise<LogDaySummary[]> {
+async function logs(key: string, dateOffset: number = 0): Promise<LogDaySummary[]> {
     const response = await fetch(`https://raw.githubusercontent.com/visca-ai/status/main/public/status/${key}_report.log`);
 
     const text = await response.text();
@@ -163,12 +164,14 @@ async function logs(key: string): Promise<LogDaySummary[]> {
         })
     })
 
-    return fillData(logDaySummary);
+    return fillData(logDaySummary, dateOffset);
 }
 
-function fillData(data: LogDaySummary[]): LogDaySummary[] {
+function fillData(data: LogDaySummary[], dateOffset: number = 0): LogDaySummary[] {
     const logDaySummary: LogDaySummary[] = [];
     var today = new Date();
+    // Apply offset (each offset = 90 days back)
+    today.setDate(today.getDate() - (dateOffset * 90));
 
     // Fill 90 days of data to show complete timeline
     for (var i = 89; i >= 0; i -= 1) {

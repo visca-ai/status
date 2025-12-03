@@ -9,7 +9,8 @@ import { useState } from 'react';
 
 
 const ServicesSection: NextPage = () => {
-    const [data, isServicesLoading] = useServices();
+    const [dateOffset, setDateOffset] = useState(0);
+    const [data, isServicesLoading] = useServices(dateOffset);
     const {systemStatus, isLoading} = useSystemStatus();
     const [collapsedGroups, setCollapsedGroups] = useState<{[key: string]: boolean}>({});
 
@@ -24,6 +25,20 @@ const ServicesSection: NextPage = () => {
         return collapsedGroups[groupName] !== undefined ? collapsedGroups[groupName] : initialState;
     };
 
+    const getDateRange = () => {
+        const today = new Date();
+        today.setDate(today.getDate() - (dateOffset * 90));
+        const endDate = new Date(today);
+        const startDate = new Date(today);
+        startDate.setDate(startDate.getDate() - 89);
+        
+        return {
+            start: startDate.toLocaleDateString('en-US', { month: 'short', year: 'numeric' }),
+            end: endDate.toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
+        };
+    };
+
+    const dateRange = getDateRange();
     const totalServices = (data as ServiceGroup[]).reduce((sum, group) => sum + group.services.length, 0);
 
     const Icon = () => {
@@ -88,7 +103,22 @@ const ServicesSection: NextPage = () => {
                             </div>
                             <div>
                                 <h2 className="text-xl font-semibold text-gray-900 dark:text-white">{systemStatus?.title}</h2>
-                                <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">Last checked {systemStatus?.datetime || 'just now'}</p>
+                                <div className="flex items-center gap-3 mt-1">
+                                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                                        Last checked: <span className="font-medium text-gray-700 dark:text-gray-300">{systemStatus?.datetime ? new Date(systemStatus.datetime).toLocaleString('en-US', { 
+                                            year: 'numeric',
+                                            month: 'short', 
+                                            day: 'numeric',
+                                            hour: '2-digit',
+                                            minute: '2-digit',
+                                            timeZoneName: 'short'
+                                        }) : 'just now'}</span>
+                                    </p>
+                                    <span className="text-gray-300 dark:text-gray-700">•</span>
+                                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                                        Monitoring <span className="font-medium text-gray-700 dark:text-gray-300">{totalServices} services</span>
+                                    </p>
+                                </div>
                             </div>
                         </div>
                         <div className={`px-4 py-2 rounded-lg text-sm font-medium ${
@@ -132,10 +162,30 @@ const ServicesSection: NextPage = () => {
 
             {/* Services Grid */}
             <div>
-                <div className="flex items-center justify-end mb-4">
-                    <p className="text-sm text-gray-500 dark:text-gray-400">
-                        Uptime over the past 90 days. <a href="https://github.com/visca-ai/status/issues" target="_blank" rel="noopener noreferrer" className="text-gray-700 dark:text-gray-300 hover:text-emerald-600 dark:hover:text-emerald-400 underline">View historical uptime</a>.
-                    </p>
+                <div className="flex items-center gap-4 mb-6">
+                    <h3 className="text-base font-semibold text-gray-900 dark:text-white">System status</h3>
+                    <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+                        <button 
+                            onClick={() => setDateOffset(prev => prev + 1)}
+                            className="p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            title="Previous 90 days"
+                        >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                            </svg>
+                        </button>
+                        <span className="font-medium">{dateRange.start} - {dateRange.end}</span>
+                        <button 
+                            onClick={() => setDateOffset(prev => Math.max(0, prev - 1))}
+                            disabled={dateOffset === 0}
+                            className="p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            title="Next 90 days"
+                        >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                            </svg>
+                        </button>
+                    </div>
                 </div>
                 {
                     isServicesLoading ? (
@@ -148,10 +198,10 @@ const ServicesSection: NextPage = () => {
                                 (data as ServiceGroup[]).map((group) => {
                                     const collapsed = isGroupCollapsed(group.name, group.collapsed);
                                     return (
-                                        <div key={group.name} className="border border-gray-200 dark:border-gray-800 rounded-xl overflow-hidden">
+                                        <div key={group.name} className="border border-gray-200 dark:border-gray-800 rounded-xl overflow-visible">
                                             <button
                                                 onClick={() => toggleGroup(group.name, group.collapsed)}
-                                                className="w-full px-5 py-4 flex items-center justify-between bg-gray-50 dark:bg-gray-900 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                                                className="w-full px-5 py-4 flex items-center justify-between bg-gray-50 dark:bg-gray-900 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors rounded-t-xl"
                                             >
                                                 <div className="flex items-center gap-3">
                                                     <svg 

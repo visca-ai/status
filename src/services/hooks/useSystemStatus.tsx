@@ -17,7 +17,16 @@ function useSystemStatus() {
                 const configLines = configText.split("\n");
                 const services: ServiceStatus[] = [];
                 for (let ii = 0; ii < configLines.length; ii++) {
-                    const configLine = configLines[ii];
+                    const configLine = configLines[ii].trim();
+                    
+                    // Skip empty lines
+                    if (!configLine) continue;
+                    
+                    // Skip group headers [Group Name|...]
+                    if (configLine.startsWith("[")) {
+                        continue;
+                    }
+                    
                     const [key, url] = configLine.split("=");
                     if (!key || !url) {
                         continue;
