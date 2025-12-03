@@ -5,6 +5,7 @@ interface Service {
     name: string;
     status: string;
     logs: LogDaySummary[];
+    group?: string;
 }
 
 export default Service;

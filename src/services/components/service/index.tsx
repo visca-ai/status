@@ -24,8 +24,12 @@ const ServiceItem: FunctionComponent<ServiceItemProps> = ({ item }) => {
 
     const calculateUpTime = () => {
         if (!item.logs || item.logs.length === 0) return null;
-        let successCount = item.logs.filter((item)=> item.status === Status.OPERATIONAL).length
-        return Math.round((successCount * 100) / item.logs.length);
+        // Only count days with actual data (not unknown status)
+        const daysWithData = item.logs.filter((log) => log.status !== "unknown");
+        if (daysWithData.length === 0) return null;
+        
+        let successCount = daysWithData.filter((log) => log.status === Status.OPERATIONAL).length;
+        return Math.round((successCount * 100) / daysWithData.length);
     }
 
     const getUptimeColor = (uptime: number) => {
@@ -38,45 +42,32 @@ const ServiceItem: FunctionComponent<ServiceItemProps> = ({ item }) => {
     const uptime = calculateUpTime();
 
     return (
-        <div className='group rounded-xl border border-gray-200 dark:border-gray-800 hover:border-gray-300 dark:hover:border-gray-700 bg-white dark:bg-black p-6 transition-all hover:shadow-md'>
-            <div className='flex items-center justify-between mb-4'>
+        <div className='rounded-lg border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950 p-5 transition-colors hover:border-gray-300 dark:hover:border-gray-700'>
+            <div className='flex items-start justify-between mb-4'>
                 <div className="flex items-center gap-3">
                     <Icon />
-                    <div>
-                        <h4 className="font-medium text-gray-900 dark:text-white">{item.name}</h4>
-                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                            {uptime !== null ? 'Last 90 days' : 'No data yet'}
-                        </p>
-                    </div>
+                    <h4 className="text-base font-medium text-gray-900 dark:text-white">{item.name}</h4>
                 </div>
-                <div className="text-right">
-                    {uptime !== null ? (
-                        <>
-                            <div className={`text-2xl font-bold ${getUptimeColor(uptime)}`}>{uptime}%</div>
-                            <p className="text-xs text-gray-500 dark:text-gray-400">uptime</p>
-                        </>
-                    ) : (
-                        <>
-                            <div className="text-xl font-medium text-gray-400 dark:text-gray-500">—</div>
-                            <p className="text-xs text-gray-500 dark:text-gray-400">pending</p>
-                        </>
-                    )}
-                </div>
+                <span className={`text-sm font-medium px-2.5 py-1 rounded ${
+                    item.status === Status.OPERATIONAL ? 'text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/30' :
+                    item.status === Status.PARTIAL_OUTAGE ? 'text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/30' :
+                    item.status === Status.OUTAGE ? 'text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/30' :
+                    'text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-900'
+                }`}>
+                    {uptime !== null ? `${uptime}% uptime` : 'No data'}
+                </span>
             </div>
-            {uptime !== null && item.logs && item.logs.length > 0 && (
-                <div className='flex gap-0.5'>
-                    {
-                        ((item.logs || []) as LogDaySummary[]).map((log) => (
-                            <ServiceLog key={log.date} item={log} />
-                        ))
-                    }
-                </div>
-            )}
-            {(uptime === null || !item.logs || item.logs.length === 0) && (
-                <div className="flex items-center justify-center py-8 text-sm text-gray-400 dark:text-gray-500">
-                    <p>Waiting for first health check...</p>
-                </div>
-            )}
+            <div className='flex gap-[2px] mb-3 h-12 items-end'>
+                {
+                    ((item.logs || []) as LogDaySummary[]).map((log) => (
+                        <ServiceLog key={log.date} item={log} />
+                    ))
+                }
+            </div>
+            <div className='flex items-center justify-between text-xs text-gray-500 dark:text-gray-400'>
+                <span>90 days ago</span>
+                <span>Today</span>
+            </div>
         </div>
     )
 }

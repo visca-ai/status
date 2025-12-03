@@ -4,8 +4,15 @@ import Log from "../types/Log";
 import LogDaySummary from "../types/LogDaySummary";
 import { Status } from "../../utils/constants";
 
+export interface ServiceGroup {
+    name: string;
+    collapsed: boolean;
+    description?: string;
+    services: Service[];
+}
+
 function useServices() {
-    const [data, setData] = useState<Service[]>([]);
+    const [data, setData] = useState<ServiceGroup[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState();
 
@@ -17,22 +24,83 @@ function useServices() {
                 const configText = await response.text();
                 const configLines = configText.split("\n");
 
-                const services: Service[] = []
+                const groups: ServiceGroup[] = [];
+                let currentGroup: ServiceGroup | null = null;
+                let serviceId = 0;
+                
                 for (let ii = 0; ii < configLines.length; ii++) {
-                    const configLine = configLines[ii];
+                    const configLine = configLines[ii].trim();
+                    
+                    // Skip empty lines
+                    if (!configLine) continue;
+                    
+                    // Check for group header [Group Name|collapsed=...]
+                    if (configLine.startsWith("[") && configLine.endsWith("]")) {
+                        // Save previous group if exists
+                        if (currentGroup) {
+                            groups.push(currentGroup);
+                        }
+                        
+                        // Parse group metadata
+                        const groupContent = configLine.slice(1, -1);
+                        const parts = groupContent.split("|");
+                        const groupName = parts[0];
+                        const collapsed = parts.find(p => p.startsWith("collapsed="))?.split("=")[1] === "true";
+                        const description = parts.find(p => p.startsWith("description="))?.split("=")[1];
+                        
+                        currentGroup = {
+                            name: groupName,
+                            collapsed: collapsed || false,
+                            description: description,
+                            services: []
+                        };
+                        continue;
+                    }
+                    
+                    // Skip lines that look like group headers but malformed
+                    if (configLine.startsWith("[")) {
+                        continue;
+                    }
+                    
                     const [key, url] = configLine.split("=");
                     if (!key || !url) {
                         continue;
                     }
+                    
+                    // If no group defined, create default one
+                    if (!currentGroup) {
+                        currentGroup = {
+                            name: "Services",
+                            collapsed: false,
+                            services: []
+                        };
+                    }
+                    
                     const log = await logs(key);
 
                     if (log.length > 0) {
-                        services.push({ id: ii, name: key, status: log[log.length - 1].status, logs: log })
+                        currentGroup.services.push({ 
+                            id: serviceId++, 
+                            name: key, 
+                            status: log[log.length - 1].status, 
+                            logs: log
+                        })
                     } else {
-                        services.push({ id: ii, name: key, status: "unknown", logs: log })
+                        currentGroup.services.push({ 
+                            id: serviceId++, 
+                            name: key, 
+                            status: "unknown", 
+                            logs: log
+                        })
                     }
                 }
-                setData(services as Service[]);
+                
+                // Add the last group
+                if (currentGroup) {
+                    groups.push(currentGroup);
+                }
+                
+                setData(groups);
             } catch (e: any) {
                 setError(e);
             } finally {
@@ -95,7 +163,6 @@ async function logs(key: string): Promise<LogDaySummary[]> {
         })
     })
 
-
     return fillData(logDaySummary);
 }
 
@@ -103,7 +170,8 @@ function fillData(data: LogDaySummary[]): LogDaySummary[] {
     const logDaySummary: LogDaySummary[] = [];
     var today = new Date();
 
-    for (var i = -1; i < 89; i += 1) {
+    // Fill 90 days of data to show complete timeline
+    for (var i = 89; i >= 0; i -= 1) {
         const d = new Date(today.getFullYear(), today.getMonth(), today.getDate() - i);
         const summary = data.find((item) => item.date === d.toISOString().substr(0, 10));
         logDaySummary.push({
@@ -114,7 +182,7 @@ function fillData(data: LogDaySummary[]): LogDaySummary[] {
         })
     }
 
-    return logDaySummary.reverse();
+    return logDaySummary;
 }
 
 
