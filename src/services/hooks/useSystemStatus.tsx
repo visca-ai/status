@@ -27,11 +27,28 @@ function useSystemStatus() {
                         continue;
                     }
                     
-                    const [key, url] = configLine.split("=");
+                    // Parse service line - handle quoted format: "Service-Name|flags"=URL
+                    let key: string, url: string;
+                    const quotedMatch = configLine.match(/^"([^"]+)"=(.+)$/);
+                    if (quotedMatch) {
+                        // Quoted format: "Service-Name|hideUrl=true"=URL
+                        key = quotedMatch[1];
+                        url = quotedMatch[2];
+                    } else {
+                        // Unquoted format: Service-Name=URL
+                        const parts = configLine.split("=");
+                        if (parts.length < 2) continue;
+                        key = parts[0];
+                        url = parts.slice(1).join("=");
+                    }
+                    
                     if (!key || !url) {
                         continue;
                     }
-                    const status = await logs(key, url);
+                    
+                    // Strip flags from key (e.g., Service|hideUrl=true -> Service)
+                    const serviceName = key.split("|")[0];
+                    const status = await logs(serviceName, url);
 
                     services.push(status);
                 }

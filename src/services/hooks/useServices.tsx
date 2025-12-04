@@ -57,20 +57,32 @@ function useServices(dateOffset: number = 0) {
                                 services: []
                             };
                         }
-                        // Skip this line regardless (valid or malformed group header)
-                        continue;
-                    }
-                    
-                    const [key, url] = configLine.split("=");
-                    if (!key || !url) {
-                        continue;
-                    }
-                    
-                    // Parse hideUrl flag from service name (format: "Service|hideUrl=true")
-                    const [serviceName, ...flags] = key.split("|");
-                    const hideUrl = flags.some(flag => flag.trim() === "hideUrl=true");
-                    
-                    // If no group defined, create default one
+                    // Skip this line regardless (valid or malformed group header)
+                    continue;
+                }
+                
+                // Parse service line - handle quoted format: "Service-Name|flags"=URL
+                let key: string, url: string;
+                const quotedMatch = configLine.match(/^"([^"]+)"=(.+)$/);
+                if (quotedMatch) {
+                    // Quoted format: "Service-Name|hideUrl=true"=URL
+                    key = quotedMatch[1];
+                    url = quotedMatch[2];
+                } else {
+                    // Unquoted format: Service-Name=URL
+                    const parts = configLine.split("=");
+                    if (parts.length < 2) continue;
+                    key = parts[0];
+                    url = parts.slice(1).join("=");
+                }
+                
+                if (!key || !url) {
+                    continue;
+                }
+                
+                // Parse hideUrl flag from service name (format: Service|hideUrl=true)
+                const [serviceName, ...flags] = key.split("|");
+                const hideUrl = flags.some(flag => flag.trim() === "hideUrl=true");                    // If no group defined, create default one
                     if (!currentGroup) {
                         currentGroup = {
                             name: "Services",
