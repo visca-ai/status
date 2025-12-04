@@ -79,5 +79,6 @@ then
   git config --global user.email 'github-actions[bot]@users.noreply.github.com'
   git add -A --force public/status/
   git commit -am '[Automated] Update Health Check Logs'
+  git pull --rebase origin staging/main
   git push
 fi
