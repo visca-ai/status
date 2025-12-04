@@ -95,5 +95,20 @@ then
   git config --global user.email 'github-actions[bot]@users.noreply.github.com'
   git add -A --force public/status/
   git commit -am '[Automated] Update Health Check Logs'
-  git push
+  
+  # Retry push up to 3 times with pull if needed
+  for i in {1..3}; do
+    if git push; then
+      echo "Successfully pushed on attempt $i"
+      break
+    else
+      echo "Push failed on attempt $i, pulling and retrying..."
+      git pull --rebase --autostash
+      if [ $i -eq 3 ]; then
+        echo "Failed to push after 3 attempts"
+        exit 1
+      fi
+      sleep 2
+    fi
+  done
 fi
