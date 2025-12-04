@@ -37,12 +37,15 @@ do
   key="${KEYSARRAY[index]}"
   url="${URLSARRAY[index]}"
   
+  # Strip any flags from service name (e.g., |hideUrl=true)
+  service_name=$(echo "$key" | cut -d'|' -f1)
+  
   # Extract domain from URL as unique identifier
   domain=$(echo "$url" | sed -E 's|^https?://([^/]+).*|\1|')
   # Replace dots and special chars with underscores for safe filenames
   filename_key="${domain//\./_}"
   
-  echo "  $key=$url (domain: $domain)"
+  echo "  $service_name=$url (domain: $domain)"
 
   for i in {1..3}
   do
