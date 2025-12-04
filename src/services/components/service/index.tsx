@@ -64,7 +64,7 @@ const ServiceItem: FunctionComponent<ServiceItemProps> = ({ item }) => {
                     <Icon />
                     <div className="flex flex-col gap-1.5">
                         <h4 className="text-base font-medium text-gray-900 dark:text-white">{displayName}</h4>
-                        {domain && (
+                        {domain && !item.hideUrl && (
                             <a 
                                 href={item.url} 
                                 target="_blank" 

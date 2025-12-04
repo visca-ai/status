@@ -66,6 +66,10 @@ function useServices(dateOffset: number = 0) {
                         continue;
                     }
                     
+                    // Parse hideUrl flag from service name (format: "Service|hideUrl=true")
+                    const [serviceName, ...flags] = key.split("|");
+                    const hideUrl = flags.some(flag => flag.trim() === "hideUrl=true");
+                    
                     // If no group defined, create default one
                     if (!currentGroup) {
                         currentGroup = {
@@ -75,23 +79,25 @@ function useServices(dateOffset: number = 0) {
                         };
                     }
                     
-                    const log = await logs(key, url, dateOffset);
+                    const log = await logs(serviceName, url, dateOffset);
 
                     if (log.length > 0) {
                         currentGroup.services.push({ 
                             id: serviceId++, 
-                            name: key, 
+                            name: serviceName, 
                             status: log[log.length - 1].status, 
                             logs: log,
-                            url: url
+                            url: url,
+                            hideUrl: hideUrl
                         })
                     } else {
                         currentGroup.services.push({ 
                             id: serviceId++, 
-                            name: key, 
+                            name: serviceName, 
                             status: "unknown", 
                             logs: log,
-                            url: url
+                            url: url,
+                            hideUrl: hideUrl
                         })
                     }
                 }

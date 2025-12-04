@@ -7,6 +7,7 @@ interface Service {
     logs: LogDaySummary[];
     group?: string;
     url?: string;
+    hideUrl?: boolean;
 }
 
 export default Service;
