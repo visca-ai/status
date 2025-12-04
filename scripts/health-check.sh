@@ -14,13 +14,26 @@ urlsConfig="public/urls.cfg"
 echo "Reading $urlsConfig"
 
 # Read file and process last line even if no trailing newline
-while IFS='=' read -r key url || [[ -n "$key" ]]; do
+while IFS= read -r line || [[ -n "$line" ]]; do
   # Skip empty lines
-  [[ -z "$key" ]] && continue
-  # Skip lines starting with [ (group headers) - use simple pattern match
-  [[ "$key" == "["* ]] && continue
+  [[ -z "$line" ]] && continue
+  # Skip lines starting with [ (group headers)
+  [[ "$line" == "["* ]] && continue
   # Skip comment lines
-  [[ "$key" == "#"* ]] && continue
+  [[ "$line" == "#"* ]] && continue
+  
+  # Split on the first = that appears after a closing quote (if quoted) or just first =
+  if [[ "$line" =~ ^\"([^\"]+)\"=(.+)$ ]]; then
+    # Quoted format: "Service-Name|flags"=URL
+    key="${BASH_REMATCH[1]}"
+    url="${BASH_REMATCH[2]}"
+  elif [[ "$line" =~ ^([^=]+)=(.+)$ ]]; then
+    # Unquoted format: Service-Name=URL
+    key="${BASH_REMATCH[1]}"
+    url="${BASH_REMATCH[2]}"
+  else
+    continue
+  fi
   
   echo "  $key=$url"
   KEYSARRAY+=("$key")
