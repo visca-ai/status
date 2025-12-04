@@ -103,7 +103,19 @@ then
       break
     else
       echo "Push failed on attempt $i, pulling and retrying..."
-      git pull --rebase --autostash
+      # Use merge strategy that keeps both changes for log files
+      git pull --no-rebase --strategy-option=theirs
+      if [ $? -eq 0 ]; then
+        # Pull succeeded, retry push
+        continue
+      else
+        # If pull fails, try to recover by accepting all changes
+        git merge --abort 2>/dev/null || true
+        git fetch origin
+        git reset --soft origin/staging/main
+        git add -A --force public/status/
+        git commit -m '[Automated] Update Health Check Logs'
+      fi
       if [ $i -eq 3 ]; then
         echo "Failed to push after 3 attempts"
         exit 1
