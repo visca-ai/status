@@ -118,7 +118,9 @@ async function logs(key: string, url: string, dateOffset: number = 0): Promise<L
     // Extract domain from URL and create safe filename
     const domain = url.replace(/^https?:\/\/([^\/]+).*/, '$1');
     const filename = domain.replace(/\./g, '_');
-    const response = await fetch(`https://raw.githubusercontent.com/visca-ai/status/main/public/status/${filename}_report.log`);
+    const response = await fetch(`https://raw.githubusercontent.com/visca-ai/status/main/public/status/${filename}_report.log`, {
+        cache: 'no-store'
+    });
 
     const text = await response.text();
     const lines = text.split("\n");
@@ -178,7 +180,7 @@ function fillData(data: LogDaySummary[], dateOffset: number = 0): LogDaySummary[
 
     // Fill 90 days of data to show complete timeline
     for (var i = 89; i >= 0; i -= 1) {
-        const d = new Date(today.getFullYear(), today.getMonth(), today.getDate() - i);
+        const d = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate() - i));
         const summary = data.find((item) => item.date === d.toISOString().substr(0, 10));
         logDaySummary.push({
             avg_response_time: summary?.avg_response_time || 0,
